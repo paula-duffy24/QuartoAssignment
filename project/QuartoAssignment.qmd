@@ -1,0 +1,111 @@
+---
+title: "Raising Awareness of the Prevalence of Health Inequalties"
+subtitle: "A Comprehensive Analysis, with the use of Visualisations"
+author: Paula Duffy
+date: "04-25-2024"
+format: html
+toc: true
+theme: Lux
+backgroundcolor: white
+execute: 
+  echo: false
+  warning: false
+  message: false
+  
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+#libraries
+library(tidyverse)
+library("maps")
+library(plotly)
+
+#Data
+metadata <- read_csv("unicef_metadata.csv")
+indicator <- read_csv("unicef_indicator_2.csv")
+
+#Transformations
+data_join <- full_join(metadata, indicator)
+data_join <- full_join(metadata, indicator, by =c("country" = "country", "year" = "time_period"))
+data_join <- metadata %>%
+  full_join(indicator)  
+```
+
+## Evolution of Life Expectancy at Birth
+
+The scatterplot portrays the **positive trajectory** of life expectancy across multiple nations worldwide, spanning from 1960 to 2020. Each data point on the scatterplot corresponds to a country and reflects its life expectancy for a specific year. 
+This visualization offers a captivating overview of global health progress over the past six decades, demonstrating a consistent **increase in life expectancy among diverse populations**. Studying this scatterplot yields valuable insights into the *evolution of healthcare*, betterment of living standards, and effectiveness of public health interventions over time. 
+Additionally, it emphasizes the significance of **ongoing efforts** to promote overall health and well-being globally, highlighting the potential for further *improvements in life expectancy* through consistent investment in healthcare *infrastructure and public health initiatives*.
+
+```{r}
+#Scatterplot
+ggplot(metadata, aes(x = year, y = `Life expectancy at birth, total (years)`)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Life Expectancy at Birth Over Time",
+       x = "Year",
+       y = "Life Expectancy at Birth (years)")
+```
+
+## 10 Countries with Highest GDP
+
+Displayed in the bar chart below are the top 10 countries ranked by their Gross Domestic Product (GDP), providing insight into the potential impact of economic strength on **global health inequalities**. By showcasing the wealthiest nations, it highlights the possible correlation between economic prosperity and access to healthcare resources. 
+Countries with higher GDPs usually possess greater financial capacity to invest in healthcare infrastructure, research, and public health programs, which could contribute to reducing health disparities within their populations. However, it also underscores the **disparities** between affluent and lower-income countries, where limited economic resources could exacerbate health inequalities. Understanding these dynamics is crucial for addressing health disparities and promoting equitable access to healthcare on a *global scale*.
+
+```{r}
+#Bar Chart
+# Group by country and calculate total GDP
+country_gdp <- data_join %>%
+  group_by(country) %>%
+  summarise(total_gdp = sum(`GDP per capita (constant 2015 US$)`))
+
+# Select the top 10 countries based on GDP
+top_10_gdp_countries <- country_gdp %>%
+  top_n(10, total_gdp)
+
+# Filter data_join to include only the top 10 countries by GDP
+filtered_data_join <- data_join %>%
+  filter(country %in% top_10_gdp_countries$country)
+  
+ggplot(top_10_gdp_countries, aes(x = country, y = total_gdp)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "GDP per Capita by Country (Year: 2020)",
+       x = "Country",
+       y = "Total GDP")
+```
+## Population Fluctuations Over Time
+
+This time series allows us to observe the changes in population across different countries over time, offering valuable insights into global demographic trends. By analyzing historical records and present-day data, we can track the **fluctuations in population sizes** and identify patterns related to birth rates, mortality rates, migration, and socio-economic factors. Through this dynamic portrayal, we gain a better understanding of the unique demographic *trajectories* of each country, which is essential in comprehending the dynamics of the world's population.
+
+```{r}
+#Timeseries
+ggplot(metadata) +
+  (aes(year, 'population, total', color = country)) +
+  geom_line()
+
+```
+## Ranking the World's GDP's
+
+The world map represents a country's **economic power** through the Gross Domestic Product (GDP). The map showcases both economic powerhouses and nations with more modest economic output. By mapping GDP disparities across the world, this visualization provides essential insights into global economic *dynamics and disparities*.
+
+```{r}
+#Map
+map_world <- map_data("world")
+
+world_gdp <- full_join(country_gdp, map_world, by = c("country" = "region"))
+
+ggplot(world_gdp) +
+  aes(x = long, y = lat, group = group, fill = `total_gdp`) +
+  geom_polygon()
+
+options(scipen = 999)
+```
+
+
+
+
+
+
+

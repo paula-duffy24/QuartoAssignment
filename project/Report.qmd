@@ -1,0 +1,49 @@
+---
+title: "Raising Awareness of the Prevalence of Health Inequalties"
+subtitle: "Analysis, with the use of Visualisations"
+author: Paula Duffy
+date: "04-25-2024"
+format: html
+theme: Lumen
+backgroundcolor: lightgrey
+execute: 
+  echo: false
+  warning: false
+  message: false
+  
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+#libraries
+library(tidyverse)
+library("maps")
+library(plotly)
+
+#Data
+metadata <- read_csv("unicef_metadata.csv")
+indicator <- read_csv("unicef_indicator_2.csv")
+
+#Transformations
+data_join <- full_join(metadata, indicator)
+data_join <- full_join(metadata, indicator, by =c("country" = "country", "year" = "time_period"))
+data_join <- metadata %>%
+  full_join(indicator)  
+```
+
+```{r}
+#Scatterplot
+ggplot(metadata, aes(x = year, y = `Life expectancy at birth, total (years)`)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Life Expectancy at Birth Over Time",
+       x = "Year",
+       y = "Life Expectancy at Birth (years)")
+```
+
+
+
+
+
+
